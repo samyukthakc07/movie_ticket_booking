@@ -1,28 +1,47 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "movie-django"
+        TEST_CONTAINER = "movie-test"
+        PROD_CONTAINER = "movie-prod"
+    }
+
     stages {
+
         stage('Checkout') {
             steps {
-                echo 'Code pulled from GitHub'
+                checkout scm
             }
         }
 
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                sh 'echo Building application'
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
-        stage('Test') {
+        stage('Deploy to Test') {
+            when {
+                branch 'dev'
+            }
             steps {
-                sh 'echo Running tests'
+                sh '''
+                docker rm -f $TEST_CONTAINER || true
+                docker run -d --name $TEST_CONTAINER -p 8081:8000 $IMAGE_NAME
+                '''
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Production') {
+            when {
+                branch 'main'
+            }
             steps {
-                sh 'echo Deploying application'
+                sh '''
+                docker rm -f $PROD_CONTAINER || true
+                docker run -d --name $PROD_CONTAINER -p 8082:8000 $IMAGE_NAME
+                '''
             }
         }
     }
