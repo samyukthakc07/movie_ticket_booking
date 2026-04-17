@@ -1,14 +1,7 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = "movie-django"
-        TEST_CONTAINER = "movie-test"
-        PROD_CONTAINER = "movie-prod"
-    }
-
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -17,7 +10,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                bat 'docker build -t movie-booking:%BRANCH_NAME% .'
             }
         }
 
@@ -26,10 +19,8 @@ pipeline {
                 branch 'dev'
             }
             steps {
-                sh '''
-                docker rm -f $TEST_CONTAINER || true
-                docker run -d --name $TEST_CONTAINER -p 8081:8000 $IMAGE_NAME
-                '''
+                bat 'docker rm -f movie-test || echo movie-test not found'
+                bat 'docker run -d --name movie-test -p 8081:8000 movie-booking:%BRANCH_NAME%'
             }
         }
 
@@ -38,10 +29,8 @@ pipeline {
                 branch 'main'
             }
             steps {
-                sh '''
-                docker rm -f $PROD_CONTAINER || true
-                docker run -d --name $PROD_CONTAINER -p 8082:8000 $IMAGE_NAME
-                '''
+                bat 'docker rm -f movie-prod || echo movie-prod not found'
+                bat 'docker run -d --name movie-prod -p 8082:8000 movie-booking:%BRANCH_NAME%'
             }
         }
     }

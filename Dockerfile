@@ -1,11 +1,11 @@
-FROM python:3.10
+FROM python:3.10-slim
 
 WORKDIR /app
 
 COPY . .
 
-RUN pip install --upgrade pip
-RUN pip install django
+RUN pip install --upgrade pip && \
+    if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install django gunicorn; fi
 
 EXPOSE 8000
 
