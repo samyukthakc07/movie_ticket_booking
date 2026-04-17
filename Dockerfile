@@ -9,4 +9,4 @@ RUN pip install --upgrade pip && \
 
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["sh", "-c", "export DJANGO_DEBUG=True && export DJANGO_SECRET_KEY=abc123 && python manage.py runserver 0.0.0.0:8000"]
